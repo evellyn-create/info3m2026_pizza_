@@ -1,7 +1,8 @@
 from flask import Flask, render_template
 from utils import db
 import os
-from flask.Migrate import Migrate
+from flask_migrate import Migrate
+from models import Usuario, Pizza
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -16,6 +17,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = conexao
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 @app.route('/')
 def index():
@@ -40,3 +42,31 @@ def promocoes():
 @app.route('/login')
 def login():
     return render_template('login.html')
+
+@app.route('/teste_insert') 
+def teste_insert():
+    user = Usuario("Gabriel", "gabriel@ifrn.edu.br", "54321")
+    db.session.add(user) #Insert into Usuario(nome, email, senha) values ('Alba Lopes', 'alba.lopes@ifrn.edu.br', '12345')
+    db.session.commit()
+    return 'Dados inseridos com sucesso!'
+
+@app.route('/teste_select')
+def teste_select():
+    users = Usuario.query.all()
+    #print(users)
+    for u in users:
+        print (u.nome)
+
+    user = Usuario.query.get(2)
+    print (f"O email do usuário de id 2 é {user.email}")
+
+    return 'dados recuperados'
+
+@app.route('/teste_update')
+def teste_update():
+    user = Usuario.query.get(1)
+    user.nome = "Alba L."
+    user.senha = "753951"
+    db.session.add(user)
+    db.session.commit()
+    return 'dados alterados com sucesso!'
